@@ -22,6 +22,7 @@ window.SimKit = (function () {
     return {
       stage, tools, chips,
       chip(t) { chips.textContent = ''; chips.appendChild(el('span', 'chip', t)); },
+      reset() { go.hidden = true; },
       say(t, c) { status.textContent = t; status.className = 'msg ' + (c || ''); },
       finish(t) { status.textContent = t; status.className = 'msg good'; go.hidden = false; go.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
     };
@@ -49,8 +50,8 @@ window.SimKit = (function () {
     s('circle', { cx: 400, cy: 220, r: 205, fill: `url(#${id}g)` }, fov);
     const layer = s('g', {}, fov);
     const pip = s('g', { visibility: 'hidden', 'pointer-events': 'none' }, fov);
-    s('polygon', { points: '0,0 600,-18 600,18', fill: 'rgba(255,255,255,.45)', stroke: '#4f5b66', 'stroke-width': 2 }, pip);
-    s('line', { x1: 40, y1: 0, x2: 600, y2: 0, stroke: 'rgba(79,91,102,.45)', 'stroke-width': 2 }, pip);
+    s('polygon', { points: '0,0 -600,-18 -600,18', fill: 'rgba(255,255,255,.45)', stroke: '#4f5b66', 'stroke-width': 2 }, pip);
+    s('line', { x1: -40, y1: 0, x2: -600, y2: 0, stroke: 'rgba(79,91,102,.45)', 'stroke-width': 2 }, pip);
     s('circle', { cx: 400, cy: 220, r: 205, fill: 'none', stroke: '#0b0e11', 'stroke-width': 8 }, svg);
     s('line', { x1: 620, y1: 408, x2: 700, y2: 408, stroke: '#cfd6dc', 'stroke-width': 3 }, svg);
     s('text', { x: 660, y: 430, 'text-anchor': 'middle', class: 'sc-scale' }, svg, '50 µm');
@@ -66,8 +67,8 @@ window.SimKit = (function () {
   /* holding pipette: thick glass tube coming in from the left, ending at x */
   function holder(layer, endX, cy) {
     const g = s('g', {}, layer);
-    s('rect', { x: -20, y: cy - 34, width: endX + 20, height: 68, rx: 10, fill: 'rgba(255,255,255,.5)', stroke: '#4f5b66', 'stroke-width': 2 }, g);
-    s('rect', { x: -20, y: cy - 14, width: endX + 20, height: 28, fill: 'rgba(120,140,150,.28)' }, g);
+    s('rect', { x: endX, y: cy - 34, width: 840 - endX, height: 68, rx: 10, fill: 'rgba(255,255,255,.5)', stroke: '#4f5b66', 'stroke-width': 2 }, g);
+    s('rect', { x: endX, y: cy - 14, width: 840 - endX, height: 28, fill: 'rgba(120,140,150,.28)' }, g);
     return g;
   }
 

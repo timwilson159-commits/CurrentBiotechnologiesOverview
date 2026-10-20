@@ -30,7 +30,7 @@ const isUnlocked = st => DEV || st.num === 1 || isDone(stations[st.num - 2]);
 
 /* ---------- figures: images/<id>.jpg|png if present, else a labelled placeholder ---------- */
 let curStation = null, figCount = 0;
-function imgSlot(id, label, cls) {
+function imgSlot(id, label, cls, mode) {
   const fig = el('figure', 'fig');
   const d = el('div', 'imgslot ' + (cls || ''));
   d.appendChild(el('div', 'ph', `<b>Image placeholder</b><small>images/${id}.jpg</small>`));
@@ -41,6 +41,8 @@ function imgSlot(id, label, cls) {
   im.onerror = () => { if (!triedPng) { triedPng = true; im.src = `images/${id}.png`; } };
   im.src = `images/${id}.jpg`;
   fig.appendChild(d);
+  if (mode === 'thumb') return fig;
+  if (mode === 'plain') { fig.appendChild(el('figcaption', '', label)); return fig; }
   figCount++;
   fig.appendChild(el('figcaption', '', `<b>Figure ${curStation ? curStation.num : 0}.${figCount}</b> ${label}`));
   return fig;
@@ -70,7 +72,7 @@ Steps.learn = (box, s, st, next) => {
     host.innerHTML = '';
     host.appendChild(el('div', 'kicker', s.kicker || 'Key ideas'));
     host.appendChild(el('div', 'lcard' + (dir === 'back' ? ' back' : ''),
-      `<div class="lab">Key idea ${i + 1} of ${s.cards.length}</div><h2>${c.title}</h2><p>${c.text}</p>`));
+      `<div class="lab">Key idea ${(s.offset || 0) + i + 1} of ${s.total || s.cards.length}</div><h2>${c.title}</h2><p>${c.text}</p>`));
     const acts = el('div', 'actions');
     if (i > 0) {
       const back = el('button', 'btn ghost', 'Previous');

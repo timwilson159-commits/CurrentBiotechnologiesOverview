@@ -15,6 +15,37 @@
   .item .meta{font-size:.84rem;color:var(--muted)}
   .item p.prompt{margin:.6rem 0;font-size:.95rem;background:var(--tint);padding:.6rem .8rem;border-left:4px solid var(--accent)}
   .note{background:var(--card);border:1px solid var(--rule);border-left:5px solid var(--accent);padding:.9rem 1.1rem;margin:1rem 0}
+  .row2{display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap}
+  .drop{
+    position:relative;flex:0 0 340px;max-width:100%;background:var(--tint);border:2px dashed var(--rule);
+    display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);
+    cursor:pointer;overflow:hidden;transition:border-color .15s,background .15s;font-size:.9rem;padding:.5rem
+  }
+  .drop.hero{aspect-ratio:21/9}
+  .drop.ex{aspect-ratio:16/10}
+  .drop:hover,.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--tint))}
+  .drop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .drop span{position:relative}
+  .side{flex:1;min-width:200px;display:flex;flex-direction:column;gap:.5rem;align-items:flex-start}
+  .stat{font-size:.88rem;color:var(--muted);min-height:1.3rem}
+  .stat.good{color:var(--good);font-weight:700}
+  .stat.bad{color:var(--bad);font-weight:700}
+  .bar{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
+  /* palettes */
+  .pal .ctrls{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem 1rem;margin:.8rem 0}
+  .pal label{display:flex;flex-direction:column;font-size:.76rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);gap:.2rem}
+  .pal label input[type=number]{font:inherit;font-size:.95rem;padding:.3rem .4rem;border:1.5px solid var(--rule);border-radius:4px;background:var(--card);width:100%}
+  .pal label input[type=range]{width:100%}
+  .pal .pv{position:relative;width:100%;max-width:640px;background:var(--tint);border:2px dashed var(--rule);min-height:140px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);text-align:center;padding:.5rem}
+  .pal .pv.over{border-color:var(--accent)}
+  .pal .pv .stack{position:relative;width:100%;line-height:0}
+  .pal .pv img{width:100%;height:auto;display:block}
+  .pal .cell{position:absolute;border:2px dashed #ffcf3a;box-shadow:0 0 0 1px rgba(0,0,0,.5);color:#fff;font:700 11px ui-monospace,Consolas,monospace;line-height:1.2;pointer-events:none}
+  .pal .cell i{font-style:normal;background:rgba(0,0,0,.65);padding:1px 4px;position:absolute;left:0;top:0}
+  .pal .out{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.6rem;margin-top:.8rem}
+  .pal .out figure{margin:0;background:var(--card);border:1px solid var(--rule);padding:.4rem;font-size:.78rem}
+  .pal .out img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block}
+  .pal .out a{font-size:.78rem}
 </style>
 </head>
 <body>
@@ -22,19 +53,53 @@
   <div class="kicker">Teacher tool</div>
   <h1>Image prompts</h1>
   <div class="note">
-    <p><b>How to use:</b> generate or source each image, save it into the <code>images</code> folder using the exact filename shown (<code>.jpg</code> or <code>.png</code>), and it replaces the placeholder automatically. No code changes are needed. Until then, each place just shows a grey placeholder box.</p>
-    <p style="margin-top:.5rem"><b>Sizes:</b> hero images show at a wide 21:9 crop, so keep the subject in the middle band (about 1600 x 690). Example images show at 16:10 (about 1280 x 800). Under 400 KB each keeps the page fast on school wifi.</p>
-    <p style="margin-top:.5rem"><b>For a consistent look</b> add this to the end of every prompt: <i>editorial documentary photograph, natural light, muted realistic colours, no text, no logos, no watermark.</i> (Already included below.) Check anything generated for biological accuracy before use.</p>
+    <p><b>Easy transfer:</b> drag a finished image onto its box (or click the box to choose a file). It is resized and saved as the correct <code>images/&lt;name&gt;.jpg</code> for you. The preview shows the exact crop students will see.</p>
+    <p style="margin-top:.5rem"><b>Save straight into the project (Chrome or Edge):</b> click <b>Connect images folder</b> once, pick the <code>images</code> folder inside <code>biotech_lab</code>, and every image you drop is written there automatically. In other browsers each drop gives you a correctly named download to move into that folder.</p>
+    <p style="margin-top:.5rem"><b>Palettes:</b> for images that must match each other (the calves, the bulls), generate <b>one sheet</b> with all of them, drop it in the palette box, line the yellow grid up with the pictures, and click <b>Split and save</b>. Each picture is cropped out and saved under its own filename.</p>
+    <p style="margin-top:.5rem"><b>Prompts:</b> each already ends with a style line for a consistent look. Check anything generated for biological accuracy before use.</p>
+  </div>
+  <div class="bar">
+    <button class="btn" id="connect">Connect images folder</button>
+    <span class="stat" id="conn">Not connected: saves will download instead.</span>
   </div>
   <div id="list"></div>
 </div>
 <script>
 const TAIL = ' Editorial documentary photograph, natural light, muted realistic colours, no text, no logos, no watermark.';
+
+/* ---------- palettes: one sheet, several images ---------- */
+const PALETTES = [
+  {
+    title: 'Station 1 palette: the four calves (offspring)',
+    cols: 2, rows: 2,
+    ids: ['s1_calf_holstein', 's1_calf_angus', 's1_calf_hereford', 's1_calf_jersey'],
+    prompt: 'One single image laid out as a 2 by 2 grid of four separate photorealistic photographs of young calves, about two weeks old. Each cell is the same size, separated by thin plain white gutters. Identical style, framing and lighting in every cell: full-body side-on view, standing on green pasture, soft overcast light, same camera distance, subject centred. Top left: a Holstein calf with a black and white patched coat and a lean dairy build. Top right: a dairy-beef cross calf with a mostly black coat, a small white patch on the forehead, a sturdy muscular build and no horns. Bottom left: a calf with a black body and a white face and a sturdy muscular build. Bottom right: a smaller, finer-boned calf with a brown and white patched coat. No text, no labels, no logos, no watermark.'
+  },
+  {
+    title: 'Station 1 palette: the four bulls (sires)',
+    cols: 2, rows: 2,
+    ids: ['s1_bull_holstein', 's1_bull_angus', 's1_bull_hereford', 's1_bull_jersey'],
+    prompt: 'One single image laid out as a 2 by 2 grid of four separate photorealistic photographs of adult bulls. Each cell is the same size, separated by thin plain white gutters. Identical style, framing and lighting in every cell: full-body side-on view, standing on green pasture, soft overcast light, same camera distance, subject centred. Top left: a Holstein-Friesian bull with a black and white coat and a lean dairy build. Top right: an Angus bull with a solid black coat, heavy muscling and no horns. Bottom left: a Hereford bull with a red-brown body, a white face and heavy muscling. Bottom right: a Jersey bull with a fawn light-brown coat and a small, fine-boned frame. No text, no labels, no logos, no watermark.'
+  }
+];
+
+/* ---------- individual images ---------- */
 const GROUPS = [
   ['Station 1: Artificial Insemination', [
     ['s1_hero', 'Hero (21:9)', 'Wide shot of a herd of black-and-white Holstein dairy cows standing in a clean modern farm yard at golden hour, shallow depth of field, no people.'],
     ['s1_ex_holstein', 'Example card (16:10)', 'Close-up of a single Holstein dairy cow looking at the camera in a green paddock, soft overcast light.'],
-    ['s1_ex_horse', 'Example card (16:10)', "Przewalski's horse (stocky, sandy dun coat, short upright dark mane, dark lower legs) standing on dry grassland steppe."]
+    ['s1_ex_horse', 'Example card (16:10)', "Przewalski's horse (stocky, sandy dun coat, short upright dark mane, dark lower legs) standing on dry grassland steppe."],
+    ['s1_cow', 'Activity: the cow Daisy (16:10)', 'Full-body side-on photograph of an adult Holstein-Friesian dairy cow with a black and white coat and a lean angular dairy build, standing calmly on green pasture, soft overcast light. Match the framing of the bull and calf images.']
+  ]],
+  ['Station 1 activity images (individual, if you do not use the palettes above)', [
+    ['s1_bull_holstein', 'Activity: bull Duke (16:10)', 'Full-body side-on photograph of an adult Holstein-Friesian bull, black and white coat, lean dairy build, standing on green pasture, soft overcast light.'],
+    ['s1_bull_angus', 'Activity: bull Barney (16:10)', 'Full-body side-on photograph of an adult Angus bull, solid black coat, heavily muscled, no horns, standing on green pasture, soft overcast light.'],
+    ['s1_bull_hereford', 'Activity: bull Maximus (16:10)', 'Full-body side-on photograph of an adult Hereford bull, red-brown body with a white face, heavily muscled, standing on green pasture, soft overcast light.'],
+    ['s1_bull_jersey', 'Activity: bull Rusty (16:10)', 'Full-body side-on photograph of an adult Jersey bull, fawn light-brown coat, small fine-boned frame, standing on green pasture, soft overcast light.'],
+    ['s1_calf_holstein', 'Activity: calf of Daisy and Duke (16:10)', 'Full-body side-on photograph of a young Holstein calf about two weeks old, black and white patched coat, lean dairy build, standing on green pasture, soft overcast light.'],
+    ['s1_calf_angus', 'Activity: calf of Daisy and Barney (16:10)', 'Full-body side-on photograph of a young dairy-beef cross calf about two weeks old, mostly black coat with a small white patch on the forehead, sturdy muscular build, no horns, standing on green pasture, soft overcast light.'],
+    ['s1_calf_hereford', 'Activity: calf of Daisy and Maximus (16:10)', 'Full-body side-on photograph of a young calf about two weeks old with a black body and a white face, sturdy muscular build, standing on green pasture, soft overcast light.'],
+    ['s1_calf_jersey', 'Activity: calf of Daisy and Rusty (16:10)', 'Full-body side-on photograph of a young smaller, finer-boned calf about two weeks old with a brown and white patched coat, standing on green pasture, soft overcast light.']
   ]],
   ['Station 2: Artificial Pollination', [
     ['s2_hero', 'Hero (21:9)', "Macro shot of a farmer's hands hand-pollinating a pale yellow-green vanilla orchid flower with a thin wooden stick, soft morning light, shallow depth of field, tropical plantation background."],
@@ -55,20 +120,195 @@ const GROUPS = [
     ['s4_ex_btcotton', 'Example card (16:10)', 'A cotton field with open white cotton bolls on healthy green plants, low sun, agricultural documentary look.']
   ]]
 ];
+
+/* ---------- folder connection ---------- */
+let dir = null;
+const conn = document.getElementById('conn');
+document.getElementById('connect').onclick = async () => {
+  if (!window.showDirectoryPicker) { conn.textContent = 'This browser cannot save into folders. Use Chrome or Edge, or use the downloads.'; conn.className = 'stat bad'; return; }
+  try {
+    dir = await window.showDirectoryPicker({ mode: 'readwrite' });
+    const ok = dir.name === 'images';
+    conn.textContent = ok ? 'Connected to the images folder. Saves go there automatically.' : `Connected to "${dir.name}", which is not named "images". Make sure this is biotech_lab/images.`;
+    conn.className = 'stat ' + (ok ? 'good' : 'bad');
+  } catch (e) {
+    if (e.name !== 'AbortError') { conn.textContent = 'Could not open that folder: ' + e.message; conn.className = 'stat bad'; }
+  }
+};
+async function saveBlob(name, blob) {
+  if (!dir) return false;
+  const fh = await dir.getFileHandle(name, { create: true });
+  const w = await fh.createWritable();
+  await w.write(blob); await w.close();
+  return true;
+}
+async function cropToJpeg(bmp, sx, sy, sw, sh, maxW) {
+  const k = Math.min(1, maxW / sw);
+  const c = document.createElement('canvas');
+  c.width = Math.round(sw * k); c.height = Math.round(sh * k);
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(bmp, sx, sy, sw, sh, 0, 0, c.width, c.height);
+  return new Promise(r => c.toBlob(r, 'image/jpeg', 0.85));
+}
+const toJpeg = async (file, maxW) => { const b = await createImageBitmap(file); return cropToJpeg(b, 0, 0, b.width, b.height, maxW); };
+const copyBtn = (text) => {
+  const b = document.createElement('button'); b.className = 'btn sm ghost'; b.textContent = 'Copy prompt';
+  b.onclick = async () => { try { await navigator.clipboard.writeText(text); } catch (e) {} b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy prompt', 1500); };
+  return b;
+};
+
 const list = document.getElementById('list');
+
+/* ---------- palette cards ---------- */
+function paletteCard(def) {
+  const d = document.createElement('div'); d.className = 'item pal';
+  d.innerHTML = `<div class="top"><b>${def.title}</b><span class="meta">${def.cols} x ${def.rows} sheet → ${def.ids.length} images</span></div><p class="prompt"></p>
+    <div class="ctrls">
+      <label>Columns<input type="number" min="1" max="6" value="${def.cols}" data-k="cols"></label>
+      <label>Rows<input type="number" min="1" max="6" value="${def.rows}" data-k="rows"></label>
+      <label>Outer margin <span data-v="m">0</span>%<input type="range" min="0" max="15" step="0.25" value="0" data-k="m"></label>
+      <label>Gap between <span data-v="g">0</span>%<input type="range" min="0" max="15" step="0.25" value="0" data-k="g"></label>
+      <label>Trim each edge <span data-v="tr">1</span>%<input type="range" min="0" max="10" step="0.25" value="1" data-k="tr"></label>
+    </div>
+    <div class="pv"><span>Drop the palette sheet here<br>or click to choose</span></div>
+    <div class="stat"></div><div class="bar"></div><div class="out"></div>`;
+  d.querySelector('.prompt').textContent = def.prompt;
+  const bar = d.querySelector('.bar'), stat = d.querySelector('.stat'), pv = d.querySelector('.pv'), out = d.querySelector('.out');
+  bar.appendChild(copyBtn(def.prompt));
+  const split = document.createElement('button'); split.className = 'btn sm'; split.textContent = 'Split and save'; split.disabled = true;
+  bar.appendChild(split);
+  const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.hidden = true; d.appendChild(input);
+  const get = k => parseFloat(d.querySelector(`[data-k="${k}"]`).value) || 0;
+  let bmp = null, stack = null;
+
+  function cells() {
+    const cols = Math.max(1, Math.round(get('cols'))), rows = Math.max(1, Math.round(get('rows')));
+    const m = get('m'), g = get('g'), tr = get('tr');
+    const cw = (100 - 2 * m - (cols - 1) * g) / cols, ch = (100 - 2 * m - (rows - 1) * g) / rows;
+    const res = [];
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const x = m + c * (cw + g), y = m + r * (ch + g);
+      res.push({ x: x + cw * tr / 100, y: y + ch * tr / 100, w: cw * (1 - 2 * tr / 100), h: ch * (1 - 2 * tr / 100) });
+    }
+    return res;
+  }
+  function draw() {
+    d.querySelectorAll('[data-v]').forEach(sp => sp.textContent = get(sp.dataset.v));
+    if (!stack) return;
+    stack.querySelectorAll('.cell').forEach(n => n.remove());
+    cells().forEach((c, i) => {
+      const n = document.createElement('div'); n.className = 'cell';
+      n.style.cssText = `left:${c.x}%;top:${c.y}%;width:${c.w}%;height:${c.h}%`;
+      n.innerHTML = `<i>${def.ids[i] || '(unused)'}</i>`;
+      stack.appendChild(n);
+    });
+    const n = cells().length;
+    stat.className = 'stat' + (n < def.ids.length ? ' bad' : '');
+    if (n < def.ids.length) stat.textContent = `The grid has ${n} cells but ${def.ids.length} images are needed.`;
+    else if (!stat.dataset.keep) stat.textContent = 'Line the yellow boxes up with the pictures, then click Split and save.';
+  }
+  d.querySelectorAll('[data-k]').forEach(i => i.addEventListener('input', () => { stat.dataset.keep = ''; draw(); }));
+
+  async function load(file) {
+    if (!file || !file.type.startsWith('image/')) { stat.textContent = 'That is not an image file.'; stat.className = 'stat bad'; return; }
+    bmp = await createImageBitmap(file);
+    pv.innerHTML = '';
+    stack = document.createElement('div'); stack.className = 'stack';
+    const im = document.createElement('img'); im.src = URL.createObjectURL(file);
+    stack.appendChild(im); pv.appendChild(stack);
+    split.disabled = false;
+    stat.dataset.keep = '';
+    draw();
+  }
+  pv.onclick = e => { if (!bmp) input.click(); };
+  pv.addEventListener('dblclick', () => input.click());
+  input.onchange = () => load(input.files[0]);
+  ['dragenter', 'dragover'].forEach(t => pv.addEventListener(t, e => { e.preventDefault(); pv.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => pv.addEventListener(t, e => { e.preventDefault(); pv.classList.remove('over'); }));
+  pv.addEventListener('drop', e => load(e.dataTransfer.files[0]));
+
+  split.onclick = async () => {
+    if (!bmp) return;
+    out.innerHTML = '';
+    const cs = cells();
+    let saved = 0;
+    for (let i = 0; i < def.ids.length && i < cs.length; i++) {
+      const c = cs[i];
+      const blob = await cropToJpeg(bmp, c.x / 100 * bmp.width, c.y / 100 * bmp.height, c.w / 100 * bmp.width, c.h / 100 * bmp.height, 1280);
+      const url = URL.createObjectURL(blob);
+      const f = document.createElement('figure');
+      const kb = Math.round(blob.size / 1024);
+      f.innerHTML = `<img src="${url}" alt="${def.ids[i]}"><div><b>${def.ids[i]}.jpg</b> (${kb} KB)</div>`;
+      if (await saveBlob(def.ids[i] + '.jpg', blob)) saved++;
+      else { const a = document.createElement('a'); a.href = url; a.download = def.ids[i] + '.jpg'; a.textContent = 'Download'; f.appendChild(a); }
+      out.appendChild(f);
+    }
+    stat.dataset.keep = '1';
+    stat.className = 'stat good';
+    stat.textContent = dir ? `Saved ${saved} images into the images folder.` : 'Split into separate images. Download each one and put them in the images folder.';
+  };
+  return d;
+}
+
+if (PALETTES.length) {
+  const h = document.createElement('h2'); h.textContent = 'Palettes (matching sets)'; list.appendChild(h);
+  PALETTES.forEach(p => list.appendChild(paletteCard(p)));
+}
+
+/* ---------- individual cards ---------- */
 GROUPS.forEach(([title, items]) => {
   const h = document.createElement('h2'); h.textContent = title; list.appendChild(h);
   items.forEach(([id, where, p]) => {
     const full = p + TAIL;
+    const hero = where.startsWith('Hero');
     const d = document.createElement('div'); d.className = 'item';
-    d.innerHTML = `<div class="top"><code>images/${id}.jpg</code><span class="meta">${where}</span></div><p class="prompt"></p>`;
+    d.innerHTML = `<div class="top"><code>images/${id}.jpg</code><span class="meta">${where}</span></div><p class="prompt"></p>
+      <div class="row2"><div class="drop ${hero ? 'hero' : 'ex'}"><span>Drop image here<br>or click to choose</span></div>
+      <div class="side"><div class="stat"></div></div></div>`;
     d.querySelector('.prompt').textContent = full;
-    const b = document.createElement('button'); b.className = 'btn sm'; b.textContent = 'Copy prompt';
-    b.onclick = async () => { try { await navigator.clipboard.writeText(full); } catch (e) {} b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy prompt', 1500); };
-    d.appendChild(b);
+    const side = d.querySelector('.side'), stat = d.querySelector('.stat'), drop = d.querySelector('.drop');
+    side.insertBefore(copyBtn(full), stat);
+    const dl = document.createElement('a'); dl.className = 'btn sm'; dl.style.textDecoration = 'none'; dl.hidden = true; dl.textContent = 'Download ' + id + '.jpg';
+    side.appendChild(dl);
+    const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.hidden = true; d.appendChild(input);
+
+    function preview(src) {
+      drop.querySelectorAll('img').forEach(i => i.remove());
+      const im = document.createElement('img'); im.src = src; im.alt = id; drop.appendChild(im);
+      drop.querySelector('span').style.display = 'none';
+    }
+    const existing = new Image();
+    existing.onload = () => { preview(existing.src); stat.textContent = 'An image is already in place.'; };
+    existing.onerror = () => { const png = new Image(); png.onload = () => { preview(png.src); stat.textContent = 'An image is already in place (png).'; }; png.src = `images/${id}.png?t=${Date.now()}`; };
+    existing.src = `images/${id}.jpg?t=${Date.now()}`;
+
+    async function handle(file) {
+      if (!file || !file.type.startsWith('image/')) { stat.textContent = 'That is not an image file.'; stat.className = 'stat bad'; return; }
+      try {
+        const blob = await toJpeg(file, hero ? 1600 : 1280);
+        const url = URL.createObjectURL(blob);
+        preview(url);
+        const kb = Math.round(blob.size / 1024);
+        dl.href = url; dl.download = id + '.jpg';
+        if (await saveBlob(id + '.jpg', blob)) {
+          dl.hidden = true;
+          stat.textContent = `Saved as ${id}.jpg (${kb} KB).`; stat.className = 'stat good';
+        } else {
+          dl.hidden = false;
+          stat.textContent = `Ready (${kb} KB). Download it and put it in the images folder.`; stat.className = 'stat good';
+        }
+      } catch (e) { stat.textContent = 'Could not process that image: ' + e.message; stat.className = 'stat bad'; }
+    }
+    drop.onclick = () => input.click();
+    input.onchange = () => handle(input.files[0]);
+    ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop', e => handle(e.dataTransfer.files[0]));
     list.appendChild(d);
   });
 });
+['dragover', 'drop'].forEach(t => window.addEventListener(t, e => e.preventDefault()));
 </script>
 </body>
 </html>

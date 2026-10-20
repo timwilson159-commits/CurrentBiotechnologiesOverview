@@ -24,13 +24,25 @@ svg.scope{cursor:none;border-radius:3px}
 @keyframes livepulse{50%{transform:scale(1.14)}}
 .shake{animation:shake .35s}
 
-/* pollination game */
-.flowers{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
-.fl{background:var(--card);border:1px solid var(--rule)}
-.fl svg{display:block;width:100%;height:auto}
-.stick{display:flex;align-items:center;gap:.7rem;margin:.8rem 0 .2rem;flex-wrap:wrap}
-.meter{flex:1;min-width:140px;height:10px;background:var(--rule);border-radius:2px;overflow:hidden}
-.meter i{display:block;height:100%;width:0;background:var(--good);transition:width .4s}
+/* pollination scenarios */
+.phase{margin-bottom:.9rem}
+.plants{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem}
+.plant{
+  position:relative;background:var(--card);border:1.5px solid var(--rule);border-radius:5px;padding:.6rem .5rem .8rem;
+  display:flex;flex-direction:column;align-items:center;gap:.3rem;text-align:center;transition:border-color .15s,background .15s;
+}
+.plant svg{width:100%;max-width:110px;height:auto}
+.plant b{font-family:var(--serif)}
+.plant:hover{border-color:var(--accent)}
+.plant.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,var(--card))}
+.plant.sel::before{content:attr(data-role);position:absolute;top:-.7rem;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.1rem .5rem;border-radius:3px;white-space:nowrap}
+.tagrow{display:flex;flex-wrap:wrap;gap:.3rem;justify-content:center}
+.tag{font-size:.74rem;font-weight:600;border:1px solid var(--rule);background:var(--tint);padding:.1rem .45rem;border-radius:3px}
+.tag.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--card));color:var(--good)}
+.tag.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--card));color:var(--bad)}
+.hyb{display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap;justify-content:center;padding:.5rem}
+.hyb svg{width:150px;height:auto}
+.hyb-side{display:flex;flex-direction:column;gap:.6rem;align-items:flex-start}
 
 /* timeline */
 .tl{border-left:3px solid var(--rule);margin:1.2rem 0 0 .6rem;padding-left:1.3rem}
@@ -59,7 +71,7 @@ table.sum td.empty{color:var(--muted);font-style:italic;text-align:center;vertic
   table.sum td,table.sum th{border:0;border-bottom:1px solid var(--rule)}
   table.sum td[data-l]::before{content:attr(data-l);display:block;font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem}
   table.sum tbody th{text-align:left}
-  .flowers{grid-template-columns:repeat(2,1fr)}
+  .plants{grid-template-columns:repeat(2,1fr)}
 }
 @media print{
   body{background:#fff;font-size:11pt}
@@ -67,3 +79,38 @@ table.sum td.empty{color:var(--muted);font-style:italic;text-align:center;vertic
   .sum-wrap{padding:0}
   table.sum tr.in{animation:none}
 }
+
+/* straw cards */
+.plant svg.straw{width:44px;max-width:44px;transition:transform .25s}
+.plant.sel svg.straw{transform:translateY(-4px)}
+
+/* insemination practical */
+.plants.two{grid-template-columns:repeat(2,1fr)}
+.plant[data-role]:not([data-role=""])::before{content:attr(data-role);position:absolute;top:-.7rem;left:50%;transform:translateX(-50%);background:var(--muted);color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.1rem .5rem;border-radius:3px;white-space:nowrap;z-index:2}
+.plant.sel[data-role]::before{background:var(--accent)}
+.plant.bull{align-items:stretch;text-align:left;padding:.5rem .5rem .8rem;gap:.2rem}
+.plant.bull svg.straw{width:26px;max-width:26px;flex:none;transform:none}
+.plant.bull.sel svg.straw{transform:translateY(-3px)}
+.plant.bull figure{margin:0}
+.bull-head{display:flex;gap:.6rem;align-items:center;margin:.4rem 0 .1rem}
+.bull-head b{font-family:var(--serif)}
+.bull-head small{display:block;color:var(--muted);font-weight:400;font-family:var(--sans)}
+.plant.bull .tagrow{justify-content:flex-start}
+.cowcard{display:flex;gap:1rem;align-items:center;background:var(--tint);border:1px solid var(--rule);padding:.7rem;margin-bottom:1rem;flex-wrap:wrap}
+.cowcard figure{flex:0 0 220px;max-width:100%;margin:0}
+.cow-info{flex:1;min-width:240px}
+.cow-info h3{font-size:1.1rem}
+.cow-info p{color:var(--muted);margin:.1rem 0 .5rem}
+.cow-info .tagrow{justify-content:flex-start}
+.calfwrap{display:flex;gap:1.2rem;align-items:flex-start;flex-wrap:wrap}
+.calfwrap figure{flex:0 0 340px;max-width:100%;margin:0}
+.calf-info{flex:1;min-width:220px;display:flex;flex-direction:column;gap:.6rem}
+.calf-info h3{font-size:1.2rem}
+.calf-info .tagrow{justify-content:flex-start}
+.cmp-h{margin:1.2rem 0 .5rem;font-family:var(--serif);font-size:1.1rem;font-weight:700}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.7rem}
+.cmpc{background:var(--card);border:1px solid var(--rule);padding:.5rem;font-size:.85rem}
+.cmpc.cur{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.cmpc figure{margin:0}
+.cmpc b{display:block;font-family:var(--serif);margin:.4rem 0 .3rem}
+.cmpc .tagrow{justify-content:flex-start}

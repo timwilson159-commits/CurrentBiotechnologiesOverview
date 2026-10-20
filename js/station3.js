@@ -46,7 +46,7 @@ function step1(box, next) {
 /* ---------- 2. enucleate ---------- */
 function step2(box, next) {
   const k = K.shell(box, head(2, 'Remove the nucleus from each egg',
-    'The egg\'s own DNA has to go, or the clone would carry DNA from two sheep. The left pipette holds the egg steady. Click and drag the nucleus out of the egg with your micropipette. Enucleate three eggs.'), next);
+    'The egg\'s own DNA has to go, or the clone would carry DNA from two sheep. The pipette on the right holds the egg steady. Click and drag the nucleus out of the egg, and it will be drawn up your micropipette. Enucleate three eggs.'), next);
   const m = K.microscope(k.stage);
   const C = { x: 400, y: 220 };
   const TOT = 3;
@@ -54,7 +54,7 @@ function step2(box, next) {
   k.chip('Eggs enucleated: 0 of 3');
   function drawEgg() {
     m.layer.innerHTML = '';
-    K.holder(m.layer, 284, C.y);
+    K.holder(m.layer, C.x + 118, C.y);
     K.egg(m.layer, C.x, C.y, false, 11 + n * 5);
     const start = { x: C.x + [-30, 28, -8][n], y: C.y + [-24, -16, 32][n] };
     const nuc = K.nucleus(m.layer, start.x, start.y, 17);
@@ -88,7 +88,7 @@ function step2(box, next) {
         s('rect', { x: C.x - 62, y: 372, width: 124, height: 26, rx: 4, fill: '#2b7a4b' }, pill);
         s('text', { x: C.x, y: 390, 'text-anchor': 'middle', class: 'sc-white' }, pill, 'Enucleated');
         await K.anim(700, e => {
-          nuc.setAttribute('transform', `translate(${from.x + 190 * e},${from.y - 20 * e}) scale(${1 - .7 * e})`);
+          nuc.setAttribute('transform', `translate(${from.x - 220 * e},${from.y}) scale(${1 - .6 * e})`);
           nuc.setAttribute('opacity', 1 - e);
         });
         nuc.remove();
@@ -189,7 +189,7 @@ function step5(box, next) {
     'A resting donor cell is moved beneath the protective outer layer (zona pellucida) of an enucleated egg, right beside its membrane. Click the donor cell and drag it onto the egg.'), next);
   const m = K.microscope(k.stage);
   const E = { x: 470, y: 220 };
-  K.holder(m.layer, E.x - 122, E.y);
+  K.holder(m.layer, E.x + 122, E.y);
   K.egg(m.layer, E.x, E.y, false, 31);
   s('text', { x: E.x, y: 372, 'text-anchor': 'middle', class: 'sc-note lt' }, m.layer, 'Enucleated egg (no nucleus)');
   const donor = s('g', { transform: 'translate(275,105)', class: 'grab' }, m.layer);
