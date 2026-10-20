@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Image prompts</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .ip{max-width:900px;margin:0 auto;padding:2rem 1.2rem 4rem}
+  .ip h1{font-size:1.8rem;margin-bottom:.4rem}
+  .ip h2{font-size:1.25rem;margin:2rem 0 .6rem;padding-bottom:.3rem;border-bottom:2px solid var(--ink)}
+  .item{background:var(--card);border:1px solid var(--rule);padding:1rem 1.1rem;margin-bottom:.9rem}
+  .item .top{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:baseline}
+  .item code{font-family:ui-monospace,Consolas,monospace;font-weight:700;font-size:.95rem}
+  .item .meta{font-size:.84rem;color:var(--muted)}
+  .item p.prompt{margin:.6rem 0;font-size:.95rem;background:var(--tint);padding:.6rem .8rem;border-left:4px solid var(--accent)}
+  .note{background:var(--card);border:1px solid var(--rule);border-left:5px solid var(--accent);padding:.9rem 1.1rem;margin:1rem 0}
+</style>
+</head>
+<body>
+<div class="ip">
+  <div class="kicker">Teacher tool</div>
+  <h1>Image prompts</h1>
+  <div class="note">
+    <p><b>How to use:</b> generate or source each image, save it into the <code>images</code> folder using the exact filename shown (<code>.jpg</code> or <code>.png</code>), and it replaces the placeholder automatically. No code changes are needed. Until then, each place just shows a grey placeholder box.</p>
+    <p style="margin-top:.5rem"><b>Sizes:</b> hero images show at a wide 21:9 crop, so keep the subject in the middle band (about 1600 x 690). Example images show at 16:10 (about 1280 x 800). Under 400 KB each keeps the page fast on school wifi.</p>
+    <p style="margin-top:.5rem"><b>For a consistent look</b> add this to the end of every prompt: <i>editorial documentary photograph, natural light, muted realistic colours, no text, no logos, no watermark.</i> (Already included below.) Check anything generated for biological accuracy before use.</p>
+  </div>
+  <div id="list"></div>
+</div>
+<script>
+const TAIL = ' Editorial documentary photograph, natural light, muted realistic colours, no text, no logos, no watermark.';
+const GROUPS = [
+  ['Station 1: Artificial Insemination', [
+    ['s1_hero', 'Hero (21:9)', 'Wide shot of a herd of black-and-white Holstein dairy cows standing in a clean modern farm yard at golden hour, shallow depth of field, no people.'],
+    ['s1_ex_holstein', 'Example card (16:10)', 'Close-up of a single Holstein dairy cow looking at the camera in a green paddock, soft overcast light.'],
+    ['s1_ex_horse', 'Example card (16:10)', "Przewalski's horse (stocky, sandy dun coat, short upright dark mane, dark lower legs) standing on dry grassland steppe."]
+  ]],
+  ['Station 2: Artificial Pollination', [
+    ['s2_hero', 'Hero (21:9)', "Macro shot of a farmer's hands hand-pollinating a pale yellow-green vanilla orchid flower with a thin wooden stick, soft morning light, shallow depth of field, tropical plantation background."],
+    ['s2_ex_vanilla', 'Example card (16:10)', 'Close-up of a vanilla orchid flower beside green developing vanilla pods on the vine, a fingertip and small stick near the flower.'],
+    ['s2_ex_dates', 'Example card (16:10)', 'Worker on a ladder against a date palm tree, tying a cluster of male flowers among the female flower bunches, bright desert sunlight.'],
+    ['s2_ex_tomato', 'Example card (16:10)', 'Inside a greenhouse with rows of tomato plants, a hand holding a small handheld vibrating pollination wand against a flower cluster, bright even light.']
+  ]],
+  ['Station 3: Cloning', [
+    ['s3_hero', 'Hero (21:9)', 'Head-and-shoulders portrait of a white-faced Finn Dorset sheep looking at the camera, soft plain pale background, calm studio feel.'],
+    ['s3_ex_dolly', 'Example card (16:10)', 'A white-faced sheep standing in a straw-bedded pen at a research facility, 1990s feel, soft light, no people. (If you have a permitted photo of Dolly, use that instead.)'],
+    ['s3_ex_snuppy', 'Example card (16:10)', 'A young Afghan hound puppy with a silky tan coat sitting on a clean pale floor, soft light.'],
+    ['s3_ex_polo', 'Example card (16:10)', 'A polo player on a chestnut horse in motion during a match on a green field in Argentina, sunny day, no readable logos.']
+  ]],
+  ['Station 4: Transgenic Species', [
+    ['s4_hero', 'Hero (21:9)', 'Several small zebrafish glowing bright fluorescent green and orange-red under blue light in a dark aquarium tank.'],
+    ['s4_ex_glofish', 'Example card (16:10)', 'Close-up of a single fluorescent zebrafish glowing vivid orange-red against a dark aquarium background, sharp focus.'],
+    ['s4_ex_goldenrice', 'Example card (16:10)', 'Overhead view of a small white bowl of golden-yellow rice grains beside a bowl of ordinary white rice on a plain neutral surface, soft daylight.'],
+    ['s4_ex_btcotton', 'Example card (16:10)', 'A cotton field with open white cotton bolls on healthy green plants, low sun, agricultural documentary look.']
+  ]]
+];
+const list = document.getElementById('list');
+GROUPS.forEach(([title, items]) => {
+  const h = document.createElement('h2'); h.textContent = title; list.appendChild(h);
+  items.forEach(([id, where, p]) => {
+    const full = p + TAIL;
+    const d = document.createElement('div'); d.className = 'item';
+    d.innerHTML = `<div class="top"><code>images/${id}.jpg</code><span class="meta">${where}</span></div><p class="prompt"></p>`;
+    d.querySelector('.prompt').textContent = full;
+    const b = document.createElement('button'); b.className = 'btn sm'; b.textContent = 'Copy prompt';
+    b.onclick = async () => { try { await navigator.clipboard.writeText(full); } catch (e) {} b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy prompt', 1500); };
+    d.appendChild(b);
+    list.appendChild(d);
+  });
+});
+</script>
+</body>
+</html>

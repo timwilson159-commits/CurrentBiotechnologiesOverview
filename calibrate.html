@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drop zone calibration</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/sims.css">
+<style>
+  .cal{max-width:900px;margin:0 auto;padding:2rem 1.2rem 3rem}
+  .cal h1{font-size:1.8rem;margin-bottom:.4rem}
+  .cal ol{margin:.6rem 0 1.2rem;padding-left:1.2rem}
+  .fields{display:flex;gap:.8rem;flex-wrap:wrap;margin:1rem 0}
+  .fields label{display:flex;flex-direction:column;font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .fields input{width:6.5rem;font:inherit;font-size:1rem;padding:.4rem .5rem;border:1.5px solid var(--rule);border-radius:4px;background:var(--card)}
+  .verdict{font-weight:700;margin:.4rem 0 1rem}
+  .verdict.yes{color:var(--good)}.verdict.no{color:var(--bad)}
+  textarea{width:100%;height:9rem;font:13px ui-monospace,Consolas,monospace;padding:.6rem;border:1.5px solid var(--rule);background:var(--card);border-radius:4px}
+  .zone{cursor:move}
+</style>
+</head>
+<body>
+<div class="cal">
+  <div class="kicker">Teacher tool</div>
+  <h1>Drop zone calibration</h1>
+  <p>This sets exactly where the gene has to land for the Station 4 drag-and-drop to count it as correct. Nothing is auto-detected: the game only checks whether the middle of the gene is inside the green box you set here.</p>
+  <ol>
+    <li>Drag the green box so it covers the gap in the plasmid (resize it with the round handle at its bottom-right corner, or type exact numbers).</li>
+    <li>Drag the green insulin gene around to test it. The message below tells you whether it would count.</li>
+    <li>Click <b>Download dropzones.js</b> and save it over <code>js/dropzones.js</code>, or copy the text and paste it in.</li>
+  </ol>
+  <div class="sim-stage"><svg id="sc"></svg></div>
+  <div class="fields">
+    <label>x<input id="fx" type="number"></label>
+    <label>y<input id="fy" type="number"></label>
+    <label>width<input id="fw" type="number"></label>
+    <label>height<input id="fh" type="number"></label>
+  </div>
+  <div class="verdict" id="verdict"></div>
+  <textarea id="out" readonly></textarea>
+  <div class="actions">
+    <button class="btn" id="dl">Download dropzones.js</button>
+    <button class="btn ghost" id="cp">Copy text</button>
+    <button class="btn ghost" id="rs">Reset to default</button>
+  </div>
+</div>
+<script src="js/svgkit.js"></script>
+<script src="js/scene_gene.js"></script>
+<script src="js/dropzones.js"></script>
+<script>
+(function () {
+  const { s, pt } = SVGKit;
+  const G = GeneScene;
+  const svg = document.getElementById('sc');
+  const sc = G.draw(svg);
+  sc.cuts.forEach(c => c.style.display = 'none');
+  sc.cutNote.style.display = 'none';
+  const base = (window.DROPZONES && DROPZONES.geneToPlasmid) || G.defaultZone;
+  const z = { ...base };
+  let gt = { x: 0, y: 150 };
+  const gb = G.geneBox;
+  const gc = () => ({ x: gb.x + gb.w / 2 + gt.x, y: gb.y + gb.h / 2 + gt.y });
+  sc.gene.setAttribute('transform', `translate(${gt.x},${gt.y})`);
+
+  const rect = s('rect', { class: 'zone', fill: 'rgba(43,122,75,.18)', stroke: '#2b7a4b', 'stroke-width': 2.5, 'stroke-dasharray': '6 4' }, svg);
+  const handle = s('circle', { r: 9, fill: '#2b7a4b', stroke: '#fff', 'stroke-width': 2, style: 'cursor:nwse-resize' }, svg);
+  svg.appendChild(sc.gene);
+
+  const f = { x: fx, y: fy, w: fw, h: fh };
+  function render() {
+    rect.setAttribute('x', z.x); rect.setAttribute('y', z.y);
+    rect.setAttribute('width', z.w); rect.setAttribute('height', z.h);
+    handle.setAttribute('cx', z.x + z.w); handle.setAttribute('cy', z.y + z.h);
+    for (const k in f) f[k].value = Math.round(z[k]);
+    const c = gc();
+    const inside = c.x >= z.x && c.x <= z.x + z.w && c.y >= z.y && c.y <= z.y + z.h;
+    verdict.textContent = inside ? 'Test gene is inside the zone: it WOULD count.' : 'Test gene is outside the zone: it would NOT count.';
+    verdict.className = 'verdict ' + (inside ? 'yes' : 'no');
+    rect.setAttribute('fill', inside ? 'rgba(43,122,75,.38)' : 'rgba(43,122,75,.18)');
+    out.value = `// Calibrated with calibrate.html. Coordinates are in the ${G.W} x ${G.H} scene space.\nwindow.DROPZONES = {\n  geneToPlasmid: { x: ${Math.round(z.x)}, y: ${Math.round(z.y)}, w: ${Math.round(z.w)}, h: ${Math.round(z.h)} }\n};\n`;
+  }
+  function drag(el, onMove) {
+    el.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+      const p0 = pt(svg, e);
+      const mv = ev => { const p = pt(svg, ev); onMove(p.x - p0.x, p.y - p0.y); p0.x = p.x; p0.y = p.y; render(); };
+      const up = () => { el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); };
+      el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up);
+    });
+  }
+  drag(rect, (dx, dy) => { z.x += dx; z.y += dy; });
+  drag(handle, (dx, dy) => { z.w = Math.max(20, z.w + dx); z.h = Math.max(20, z.h + dy); });
+  drag(sc.gene, (dx, dy) => { gt.x += dx; gt.y += dy; sc.gene.setAttribute('transform', `translate(${gt.x},${gt.y})`); });
+  for (const k in f) f[k].addEventListener('input', () => { z[k] = parseFloat(f[k].value) || 0; render(); });
+  rs.onclick = () => { Object.assign(z, G.defaultZone); render(); };
+  cp.onclick = async () => { try { await navigator.clipboard.writeText(out.value); cp.textContent = 'Copied'; } catch (e) { out.select(); document.execCommand('copy'); cp.textContent = 'Copied'; } setTimeout(() => cp.textContent = 'Copy text', 1500); };
+  dl.onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([out.value], { type: 'text/javascript' }));
+    a.download = 'dropzones.js';
+    a.click();
+  };
+  render();
+})();
+</script>
+</body>
+</html>

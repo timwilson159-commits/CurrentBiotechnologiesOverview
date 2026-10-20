@@ -1,0 +1,69 @@
+/* ---------- simulation / activity scaffolding ---------- */
+.sim .brief{background:var(--card);border:1px solid var(--rule);border-left:5px solid var(--accent);padding:.9rem 1.1rem;margin:.9rem 0 1.1rem;font-size:1rem}
+.sim-stage{background:var(--card);border:1px solid var(--rule);padding:.7rem}
+.sim-stage svg{display:block;width:100%;height:auto;touch-action:none}
+svg.scope{cursor:none;border-radius:3px}
+.sim-tools{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
+.chips{margin-top:.8rem;min-height:1.9rem}
+.chip{display:inline-block;font-size:.8rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--rule);background:var(--card);padding:.2rem .65rem;border-radius:3px;color:var(--muted)}
+.sc-label{font:700 15px var(--sans);fill:var(--ink)}
+.sc-note{font:600 13px var(--sans);fill:#4a5663;paint-order:stroke;stroke:#fffdf8;stroke-width:3px;stroke-linejoin:round}
+.sc-white{font:700 13px var(--sans);fill:#fff}
+.sc-note.lt{fill:#26323b}
+.sc-scale{font:600 12px var(--sans);fill:#cfd6dc}
+.sc-big{font:700 22px var(--serif);fill:var(--ink)}
+.hot{cursor:pointer}
+.hot:hover .hl{stroke:var(--accent);stroke-width:3}
+.grab{cursor:grab}
+.grab:active{cursor:grabbing}
+.target-pulse{animation:tp 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes tp{50%{transform:scale(1.15);opacity:.55}}
+.pop{animation:popin .35s ease both;transform-box:fill-box;transform-origin:center}
+@keyframes popin{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.live{animation:livepulse 1.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes livepulse{50%{transform:scale(1.14)}}
+.shake{animation:shake .35s}
+
+/* pollination game */
+.flowers{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.fl{background:var(--card);border:1px solid var(--rule)}
+.fl svg{display:block;width:100%;height:auto}
+.stick{display:flex;align-items:center;gap:.7rem;margin:.8rem 0 .2rem;flex-wrap:wrap}
+.meter{flex:1;min-width:140px;height:10px;background:var(--rule);border-radius:2px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--good);transition:width .4s}
+
+/* timeline */
+.tl{border-left:3px solid var(--rule);margin:1.2rem 0 0 .6rem;padding-left:1.3rem}
+.tl-item{position:relative;padding-bottom:1.3rem;animation:rise .4s both}
+.tl-item::before{content:"";position:absolute;left:calc(-1.3rem - 8px);top:.35rem;width:13px;height:13px;border-radius:50%;background:var(--accent);border:3px solid var(--paper)}
+.tl-item .yr{font-family:var(--serif);font-weight:700;font-size:1.3rem;color:var(--accent)}
+.tl-item h3{font-size:1.05rem;margin:.1rem 0}
+.tl-item p{font-size:.95rem;color:#33404e}
+
+/* summary table */
+.sum-wrap{max-width:1000px;margin:0 auto;padding:2.2rem 1.2rem 3rem}
+.sum-wrap h1{font-size:2rem;margin:.2rem 0 .5rem}
+.sum-wrap .lead{margin-top:0}
+table.sum{width:100%;border-collapse:collapse;background:var(--card);font-size:.9rem}
+table.sum th,table.sum td{border:1px solid var(--ink);padding:.6rem .7rem;vertical-align:top;text-align:left}
+table.sum thead th{font-family:var(--serif);background:var(--tint);text-align:center}
+table.sum tbody th{font-family:var(--serif);background:var(--tint);width:9rem;vertical-align:middle;text-align:center}
+table.sum ul{margin:0;padding-left:1.1rem}
+table.sum li{margin-bottom:.2rem}
+table.sum tr.in{animation:rise .6s both}
+table.sum td.empty{color:var(--muted);font-style:italic;text-align:center;vertical-align:middle;background:repeating-linear-gradient(45deg,transparent 0 10px,rgba(0,0,0,.03) 10px 20px)}
+@media (max-width:760px){
+  table.sum,table.sum tbody,table.sum tr,table.sum td,table.sum th{display:block;width:100%}
+  table.sum thead{display:none}
+  table.sum tr{margin-bottom:1rem;border:1px solid var(--ink)}
+  table.sum td,table.sum th{border:0;border-bottom:1px solid var(--rule)}
+  table.sum td[data-l]::before{content:attr(data-l);display:block;font-weight:700;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.2rem}
+  table.sum tbody th{text-align:left}
+  .flowers{grid-template-columns:repeat(2,1fr)}
+}
+@media print{
+  body{background:#fff;font-size:11pt}
+  .topwrap,.sum-wrap .actions,.sum-wrap .lead,.kicker{display:none}
+  .sum-wrap{padding:0}
+  table.sum tr.in{animation:none}
+}
